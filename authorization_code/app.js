@@ -1,4 +1,4 @@
-/**
+/*
  * This is an example of a basic node.js script that performs
  * the Authorization Code oAuth2 flow to authenticate against
  * the Spotify Accounts.
@@ -6,7 +6,7 @@
  * For more information, read
  * https://developer.spotify.com/web-api/authorization-guide/#authorization_code_flow
  */
-require('dotenv').config();
+require('dotenv').config({path: __dirname+'/../.env'});
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var cors = require('cors');
@@ -18,13 +18,15 @@ var client_id = require('../clientId');
 // var client_secret = process.env.SPOTIFY_CLIENT_SECRET; 
 var client_secret = require('../clientSecret');
 
-//var redirect_uri = 'http://localhost:8888/spotify/callback/'; //** fix
-var redirect_uri = "https://jaredpresnell.me/spotify/callback/";
-/**
- * Generates a random string containing numbers and l   tters
+var redirect_uri = process.env.STAGE + 'callback/';
+console.log('REDIRECT URI');
+console.log(redirect_uri);
+
+/*
+ * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
  * @return {string} The generated string
- */
+ */ 
 var generateRandomString = function(length) {
   var text = '';
   var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -43,10 +45,6 @@ app.use(express.static(__dirname + '/public'))
    .use(cors())
    .use(cookieParser());
 
-app.get('/spotify/test', function(req, res) {
-    res.send('hello there my name is spotify');
-});   
-//app.get('/login', function(req, res) {
 app.get('/spotify/login', function(req, res){
   var state = generateRandomString(16);
   res.cookie(stateKey, state);
@@ -55,19 +53,16 @@ app.get('/spotify/login', function(req, res){
   //var scope = 'user-read-private user-read-email user-read-playback-state playlist-read-private user-top-read user-read-recently-played user-read-currently-playing user-follow-read user-read-email streaming playlist-read-collaborative user-library-read playlist-modify-public playlist-modify-private playlist-modify';
   var scope = 'user-read-private user-read-email user-read-playback-state playlist-read-private user-top-read user-read-recently-played user-read-currently-playing user-follow-read user-read-email streaming playlist-read-collaborative user-library-read'; 
    res.redirect('https://accounts.spotify.com/authorize?' +
-   //res.json({message: 'https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
       client_id: client_id,
       scope: scope,
       redirect_uri: redirect_uri,
       state: state
-    //})});
     }));
 
 });
 
-//app.get('/callback', function(req, res) {
 app.get('/spotify/callback', function(req, res) {
 
   // your application requests refresh and access tokens
@@ -117,16 +112,9 @@ app.get('/spotify/callback', function(req, res) {
 
         // we can also pass the token to the browser to make requests from there
         //res.redirect('http://localhost:3000/#' +
+          //**
         
-        //this was working basically to send back a json with the shit, but 
-        // really i want to not do it like this 
-    //res.json({
-    //    access_token: access_token,
-    //    refresh_token: refresh_token
-    //});
-              
-        res.redirect('https://jaredpresnell.me/app/#' +
-        //res.redirect('http://localhost:3000/#' + //** fix
+        res.redirect(process.env.SITE_REDIRECT_URI +
          querystring.stringify({
             access_token: access_token,
             refresh_token: refresh_token,

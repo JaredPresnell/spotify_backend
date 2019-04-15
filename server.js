@@ -206,15 +206,7 @@ function updateTracks(spotifyData, jaredAccessToken){
 			totalTracks.push({name: item.name, artists: item.artists, user: data.user.name});
 		});
 	});
-	const playlist_id = '674PhRT9Knua4GdUkgzTel';
-	console.log('calling spotify');
-    spotifyApi.setAccessToken(jaredAccessToken);
-	spotifyApi.replaceTracksInPlaylist(playlist_id, trackUris)
-	.then((res)=> {
-		console.log(res);
-	});
-
-    var lastUpdated = new Date();
+	var lastUpdated = new Date();
 	return Tracks.findOneAndUpdate({}, {tracks: totalTracks, lastUpdated: lastUpdated}, {upsert: true, new: true},
 		function(err, tracks){
 			if(err) console.log(err);
@@ -222,29 +214,33 @@ function updateTracks(spotifyData, jaredAccessToken){
 				return tracks;
 			}
 	});
+	const playlist_id = '674PhRT9Knua4GdUkgzTel';
+	spotifyApi.setAccessToken(jaredAccessToken);
+	spotifyApi.replaceTracksInPlaylist(playlist_id, trackUris)
+	.then((res)=> {
+		console.log(res);
+	});
 }
 function doEverything(){
+	// in order to use this function, you must be connected to the mongo database (i think)
 	// gets users, refreshes all access tokens, saves tracks to the database and to spotify
 	// returns updated tracks list
 
-	// mongoose.connect(uri, {useNewUrlParser: true});
-	// var db = mongoose.connection;
-	//db.once('open', ()=> {
-		console.log('inside do everything');
-        return getUsers().then((tokensPromiseArray)=>{
-			return Promise.all(tokensPromiseArray).then((tokensArray)=>{
-				return Promise.all(updateTokens(tokensArray)).then((updatedUsersArray)=>{
-					var spotifyDataObject = getTracksFromSpotify(updatedUsersArray);
-					var jaredAccessToken = spotifyDataObject.jaredAccessToken;
-					var spotifyPromises = spotifyDataObject.spotifyPromises;
-					return Promise.all(spotifyPromises)	
-					.then((spotifyData) =>{
-						return updateTracks(spotifyData, jaredAccessToken);
-					});	
-				});
+	
+	console.log('inside do everything');
+    return getUsers().then((tokensPromiseArray)=>{
+		return Promise.all(tokensPromiseArray).then((tokensArray)=>{
+			return Promise.all(updateTokens(tokensArray)).then((updatedUsersArray)=>{
+				var spotifyDataObject = getTracksFromSpotify(updatedUsersArray);
+				var jaredAccessToken = spotifyDataObject.jaredAccessToken;
+				var spotifyPromises = spotifyDataObject.spotifyPromises;
+				return Promise.all(spotifyPromises)	
+				.then((spotifyData) =>{
+					return updateTracks(spotifyData, jaredAccessToken);
+				});	
 			});
 		});
-	//});
+	});
 }	
 
 module.exports = {
