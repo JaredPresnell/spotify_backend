@@ -207,6 +207,16 @@ function updateTracks(spotifyData, jaredAccessToken){
 		});
 	});
 	var lastUpdated = new Date();
+	const playlist_id = '674PhRT9Knua4GdUkgzTel';
+	if(process.env.STAGE === 'https://jaredpresnell.me/spotify/')
+	{
+		spotifyApi.setAccessToken(jaredAccessToken);
+		spotifyApi.replaceTracksInPlaylist(playlist_id, trackUris)
+		.then((res)=> {
+			console.log(res);
+		});
+	}
+	
 	return Tracks.findOneAndUpdate({}, {tracks: totalTracks, lastUpdated: lastUpdated}, {upsert: true, new: true},
 		function(err, tracks){
 			if(err) console.log(err);
@@ -214,12 +224,7 @@ function updateTracks(spotifyData, jaredAccessToken){
 				return tracks;
 			}
 	});
-	const playlist_id = '674PhRT9Knua4GdUkgzTel';
-	spotifyApi.setAccessToken(jaredAccessToken);
-	spotifyApi.replaceTracksInPlaylist(playlist_id, trackUris)
-	.then((res)=> {
-		console.log(res);
-	});
+	
 }
 function doEverything(){
 	// in order to use this function, you must be connected to the mongo database (i think)
