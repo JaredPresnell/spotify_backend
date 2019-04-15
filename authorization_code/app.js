@@ -45,7 +45,7 @@ app.use(express.static(__dirname + '/public'))
    .use(cors())
    .use(cookieParser());
 
-app.get('/spotify/login', function(req, res){
+app.get('/spotifyauth/login', function(req, res){
   var state = generateRandomString(16);
   res.cookie(stateKey, state);
 
@@ -63,7 +63,7 @@ app.get('/spotify/login', function(req, res){
 
 });
 
-app.get('/spotify/callback', function(req, res) {
+app.get('/spotifyauth/callback', function(req, res) {
 
   // your application requests refresh and access tokens
   // after checking the state parameter
@@ -130,7 +130,7 @@ app.get('/spotify/callback', function(req, res) {
 });
 
 //app.get('/refresh_token', function(req, res) {
-  app.get('/spotify/refresh_token', function(req, res) {
+  app.get('/spotifyauth/refresh_token', function(req, res) {
 
     // requesting access token from refresh token
   var refresh_token = req.query.refresh_token;

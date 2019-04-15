@@ -126,7 +126,7 @@ app.get('/api/loadData', (req, res)=>{
 });
 app.listen(port, () => {
 	console.log("Listening on port "+port);
-	doEverything();
+	//doEverything();
 	
 	function updateTimer(){
 		var d = new Date();
@@ -208,7 +208,7 @@ function updateTracks(spotifyData, jaredAccessToken){
 	});
 	var lastUpdated = new Date();
 	const playlist_id = '674PhRT9Knua4GdUkgzTel';
-	if(process.env.STAGE === 'https://jaredpresnell.me/spotify/')
+	if(process.env.STAGE === 'https://jaredpresnell.me/spotifyauth/')
 	{
 		spotifyApi.setAccessToken(jaredAccessToken);
 		spotifyApi.replaceTracksInPlaylist(playlist_id, trackUris)
