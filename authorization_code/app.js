@@ -6,20 +6,20 @@
  * For more information, read
  * https://developer.spotify.com/web-api/authorization-guide/#authorization_code_flow
  */
-
+require('dotenv').config();
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 
-//var client_id = process.env.SPOTIFY_CLIENT_ID; 
+// var client_id = process.env.SPOTIFY_CLIENT_ID; 
 var client_id = require('../clientId');
-//var client_secret = process.env.SPOTIFY_CLIENT_SECRET; 
+// var client_secret = process.env.SPOTIFY_CLIENT_SECRET; 
 var client_secret = require('../clientSecret');
 
-//var redirect_uri = 'http://localhost:8888/callback/'; // Your redirect uri
-var redirect_uri = "https://jaredpresnell.me/spotify/callback/";
+var redirect_uri = 'http://localhost:8888/spotify/callback/'; //** fix
+// var redirect_uri = "https://jaredpresnell.me/spotify/callback/";
 /**
  * Generates a random string containing numbers and l   tters
  * @param  {number} length The length of the string
@@ -125,7 +125,8 @@ app.get('/spotify/callback', function(req, res) {
     //    refresh_token: refresh_token
     //});
               
-        res.redirect('https://jaredpresnell.me/app/#' +
+        //res.redirect('https://jaredpresnell.me/app/#' +
+        res.redirect('http://localhost:3000/#' + //** fix
          querystring.stringify({
             access_token: access_token,
             refresh_token: refresh_token,
