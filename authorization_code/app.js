@@ -18,8 +18,8 @@ var client_id = require('../clientId');
 // var client_secret = process.env.SPOTIFY_CLIENT_SECRET; 
 var client_secret = require('../clientSecret');
 
-var redirect_uri = 'http://localhost:8888/spotify/callback/'; //** fix
-// var redirect_uri = "https://jaredpresnell.me/spotify/callback/";
+//var redirect_uri = 'http://localhost:8888/spotify/callback/'; //** fix
+var redirect_uri = "https://jaredpresnell.me/spotify/callback/";
 /**
  * Generates a random string containing numbers and l   tters
  * @param  {number} length The length of the string
@@ -53,7 +53,7 @@ app.get('/spotify/login', function(req, res){
 
   // your application requests authorization
   //var scope = 'user-read-private user-read-email user-read-playback-state playlist-read-private user-top-read user-read-recently-played user-read-currently-playing user-follow-read user-read-email streaming playlist-read-collaborative user-library-read playlist-modify-public playlist-modify-private playlist-modify';
-   var scope = 'user-read-private user-read-email user-read-playback-state playlist-read-private user-top-read user-read-recently-played user-read-currently-playing user-follow-read user-read-email streaming playlist-read-collaborative user-library-read'; 
+  var scope = 'user-read-private user-read-email user-read-playback-state playlist-read-private user-top-read user-read-recently-played user-read-currently-playing user-follow-read user-read-email streaming playlist-read-collaborative user-library-read'; 
    res.redirect('https://accounts.spotify.com/authorize?' +
    //res.json({message: 'https://accounts.spotify.com/authorize?' +
     querystring.stringify({
@@ -125,8 +125,8 @@ app.get('/spotify/callback', function(req, res) {
     //    refresh_token: refresh_token
     //});
               
-        //res.redirect('https://jaredpresnell.me/app/#' +
-        res.redirect('http://localhost:3000/#' + //** fix
+        res.redirect('https://jaredpresnell.me/app/#' +
+        //res.redirect('http://localhost:3000/#' + //** fix
          querystring.stringify({
             access_token: access_token,
             refresh_token: refresh_token,

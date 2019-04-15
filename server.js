@@ -206,19 +206,21 @@ function updateTracks(spotifyData, jaredAccessToken){
 			totalTracks.push({name: item.name, artists: item.artists, user: data.user.name});
 		});
 	});
-	var lastUpdated = new Date();
+	const playlist_id = '674PhRT9Knua4GdUkgzTel';
+	console.log('calling spotify');
+    spotifyApi.setAccessToken(jaredAccessToken);
+	spotifyApi.replaceTracksInPlaylist(playlist_id, trackUris)
+	.then((res)=> {
+		console.log(res);
+	});
+
+    var lastUpdated = new Date();
 	return Tracks.findOneAndUpdate({}, {tracks: totalTracks, lastUpdated: lastUpdated}, {upsert: true, new: true},
 		function(err, tracks){
 			if(err) console.log(err);
 			else {
 				return tracks;
 			}
-	});
-	const playlist_id = '674PhRT9Knua4GdUkgzTel';
-	spotifyApi.setAccessToken(jaredAccessToken);
-	spotifyApi.replaceTracksInPlaylist(playlist_id, trackUris)
-	.then((res)=> {
-		console.log(res);
 	});
 }
 function doEverything(){
