@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');  
 const bodyParser = require('body-parser');
 var mongoose = require('mongoose');
@@ -33,7 +34,6 @@ var Bluebird = require('bluebird');
 fetch.Promise = Bluebird;
 
 app.get('/api/getusers', (req, res) => {
-    //res.json([{name:'test', spotifyId:'dsafdsfa', refresh_token: 'testrefresh', access_token:"testaccess"}]);
         
     mongoose.connect(uri, {useNewUrlParser: true});
 	var db = mongoose.connection;
@@ -67,6 +67,8 @@ app.post('/api/edituser',(req, res) => {
 
 });
 app.post('/api/adduser', (req, res) => {
+	//adds a user to the database
+	//returns updated track list from database
   	mongoose.connect(uri, {useNewUrlParser: true});
   	var db = mongoose.connection;
   	db.on('error', console.error.bind(console, 'connection error:'));
@@ -82,18 +84,15 @@ app.post('/api/adduser', (req, res) => {
 				user.save((err, user) => {
 					if (err) return console.error(err);
 					console.log(user.name + 'saved to database');
-					doEverything();
-					//doEverything().then((res)=>{
-                    //        res.json(res);
-                    //});
-                    // doEverything().then(()=>{
-					// 	console.log('do everything async');
-					// })
-					//** this needs to be able to be thenable in order to work at all.
-					// so instead of sending res.json below, i need to send the doEverything() promise
+					doEverything()
+					.then((data)=> {
+						res.json(data);
+					});
 				});	
 			}
-			res.json({message: 'complete'});
+			else {
+				res.json({message: 'user already exists in database'});
+			}
 			
 		});
 	});
@@ -115,9 +114,12 @@ app.get('/api/gettracks', (req, res) =>{
 });
 
 app.get('/api/doeverything', (req, res) =>{
-   doEverything();
-    console.log('testtest');
-   res.send('doing everything');
+	mongoose.connect(uri, {useNewUrlParser: true});
+	var db = mongoose.connection;
+	db.once('open', ()=> {
+   		doEverything();
+   	});
+   	res.send('doing everything');
 });
 app.get('/api/loadData', (req, res)=>{
 	res.send('this is where Id load data');
@@ -131,11 +133,12 @@ app.listen(port, () => {
 		var day = d.getDay();
 		var minutes = d.getMinutes();
 		var hours = d.getHours();
-		// console.log('day: ' + day);
-		// console.log("hours: " + hours);
-		// console.log('minutes: ' + minutes);
 		if(day==5 && hours==0){
-			doEverything();
+			mongoose.connect(uri, {useNewUrlParser: true});
+			var db = mongoose.connection;
+			db.once('open', ()=> {
+				doEverything();
+			});
 		}
 	}
 	setInterval(updateTimer, 60*30*1000);
@@ -150,12 +153,11 @@ function getUsers(){
 		var tokensPromiseArray = users.map((user) =>{
 			var refreshToken = user.refreshToken;
 			console.log('user id: ' + user.spotifyId);
-			//return fetch('http://localhost:8888/refresh_token?refresh_token=' + refreshToken, {
             return fetch(process.env.STAGE + 'refresh_token?refresh_token=' + refreshToken, {
-
         		method: 'GET',
 	      	})
 	 	 	.then(function(res){
+	 	 		console.log(res);
 	      		return res.json();
 	      	});
 		});
@@ -178,7 +180,6 @@ function getTracksFromSpotify(users){
 		if(user.spotifyId==="waytoofatdolphin")
 		{
 			jaredAccessToken = user.accessToken;
-			//** fix this
 		}
 	});
 	var spotifyPromises = [];
@@ -195,7 +196,7 @@ function getTracksFromSpotify(users){
 }
 function updateTracks(spotifyData, jaredAccessToken){
 	// this function updates tracks in the database, and sends tracks to spotify
-	console.log('INSIDE UPDATE TRACKS');
+	console.log('INSIDE UPDATE TRACKS');		
 	var totalTracks = [];
 	var trackUris = [];
 	spotifyData.forEach((data) =>{
@@ -206,10 +207,12 @@ function updateTracks(spotifyData, jaredAccessToken){
 		});
 	});
 	var lastUpdated = new Date();
-	Tracks.findOneAndUpdate({}, {tracks: totalTracks, lastUpdated: lastUpdated}, {upsert: false, new: true},
-		function(err){
+	return Tracks.findOneAndUpdate({}, {tracks: totalTracks, lastUpdated: lastUpdated}, {upsert: true, new: true},
+		function(err, tracks){
 			if(err) console.log(err);
-			else console.log('tracks updated');
+			else {
+				return tracks;
+			}
 	});
 	const playlist_id = '674PhRT9Knua4GdUkgzTel';
 	spotifyApi.setAccessToken(jaredAccessToken);
@@ -219,24 +222,27 @@ function updateTracks(spotifyData, jaredAccessToken){
 	});
 }
 function doEverything(){
-	mongoose.connect(uri, {useNewUrlParser: true});
-	var db = mongoose.connection;
-	return db.once('open', ()=> {
+	// gets users, refreshes all access tokens, saves tracks to the database and to spotify
+	// returns updated tracks list
+
+	// mongoose.connect(uri, {useNewUrlParser: true});
+	// var db = mongoose.connection;
+	//db.once('open', ()=> {
 		console.log('inside do everything');
-        getUsers().then((tokensPromiseArray)=>{
-			Promise.all(tokensPromiseArray).then((tokensArray)=>{
-				Promise.all(updateTokens(tokensArray)).then((updatedUsersArray)=>{
+        return getUsers().then((tokensPromiseArray)=>{
+			return Promise.all(tokensPromiseArray).then((tokensArray)=>{
+				return Promise.all(updateTokens(tokensArray)).then((updatedUsersArray)=>{
 					var spotifyDataObject = getTracksFromSpotify(updatedUsersArray);
 					var jaredAccessToken = spotifyDataObject.jaredAccessToken;
 					var spotifyPromises = spotifyDataObject.spotifyPromises;
-					Promise.all(spotifyPromises)	
+					return Promise.all(spotifyPromises)	
 					.then((spotifyData) =>{
-						updateTracks(spotifyData, jaredAccessToken);
+						return updateTracks(spotifyData, jaredAccessToken);
 					});	
 				});
 			});
 		});
-	});
+	//});
 }	
 
 module.exports = {
