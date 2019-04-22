@@ -202,8 +202,11 @@ function updateTracks(spotifyData, jaredAccessToken){
 	spotifyData.forEach((data) =>{
 		var userSongs = data.songs;
 		userSongs.body.items.forEach((item)=>{
-			trackUris.push(item.uri);
-			totalTracks.push({name: item.name, artists: item.artists, user: data.user.name});
+
+			console.log('ITEM LINE 206');
+			console.log(item);
+			trackUris.push(item.uri);	
+			totalTracks.push({name: item.name, artists: item.artists, user: data.user.name, trackUri: item.uri});
 		});
 	});
 	var lastUpdated = new Date();

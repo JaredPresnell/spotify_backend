@@ -19,9 +19,6 @@ var client_id = require('../clientId');
 var client_secret = require('../clientSecret');
 
 var redirect_uri = process.env.STAGE + 'callback/';
-console.log('REDIRECT URI');
-console.log(redirect_uri);
-
 /*
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
